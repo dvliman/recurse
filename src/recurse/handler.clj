@@ -22,12 +22,14 @@
 
 (def routes
   [["/set" {:get {:parameters
-                  {:query [:fn (fn [params] (and (map? params) (seq params)))]}
+                  {:query [:fn {:error/message "params required"}
+                           (fn [params] (and (map? params) (seq params)))]}
                   :handler handle-set}}]
    ["/get" {:get {:parameters
                   {:query [:and
                            [:map [:key string?]]
-                           [:fn (fn [{:keys [key]}] (seq key))]]}
+                           [:fn {:error/message "key required"}
+                            (fn [{:keys [key]}] (seq key))]]}
                   :handler handle-get}}]])
 
 (defmethod ig/init-key ::handler [_ opts]

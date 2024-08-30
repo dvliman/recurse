@@ -2,22 +2,24 @@
   (:require
    [integrant.core :as ig]
    [ring.mock.request :as mock]
-   [recurse.main :as main]))
+   [recurse.main :as main]
+   [clojure.walk :as walk]
+   [cheshire.core :as json]))
 
-(def system nil)
+(defonce system nil)
 
 (def test-config (dissoc main/config :recurse.main/server))
 
-(defn bootstrap []
-  (prn "calling bootstrap")
+(defn bootstrap [test]
   (alter-var-root #'system (constantly test-config))
   (alter-var-root #'system (fn [sys]
-                             (ig/init sys))))
+                             (ig/init sys)))
+  (test))
 
 (defn run-request [request]
   (let [handler  (:recurse.handler/handler system)
         response (handler request)]
-    response))
+    (update response :body (comp walk/keywordize-keys json/decode slurp))))
 
 (defn handle-set [params]
   (-> (mock/request :get "/set")
