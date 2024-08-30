@@ -12,8 +12,7 @@
 
 (defn bootstrap [test]
   (alter-var-root #'system (constantly test-config))
-  (alter-var-root #'system (fn [sys]
-                             (ig/init sys)))
+  (alter-var-root #'system ig/init)
   (test))
 
 (defn run-request [request]

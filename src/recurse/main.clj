@@ -1,9 +1,9 @@
 (ns recurse.main
   (:require
-   [recurse.db]
-   [recurse.handler]
    [integrant.core :as ig]
    [integrant.repl :as repl]
+   [recurse.db]
+   [recurse.handler]
    [ring.adapter.jetty :as jetty]))
 
 (defmethod ig/init-key ::server [_ {:keys [handler] :as opts}]

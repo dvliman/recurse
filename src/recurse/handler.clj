@@ -1,5 +1,6 @@
 (ns recurse.handler
   (:require
+   [clojure.walk :as walk]
    [integrant.core :as ig]
    [muuntaja.core]
    [reitit.coercion.malli :as malli]
@@ -8,17 +9,16 @@
    [reitit.ring.coercion :as ring-coercion]
    [reitit.ring.middleware.muuntaja :as muuntaja]
    [reitit.ring.middleware.parameters :as parameters]
-   [ring.middleware.keyword-params :refer [wrap-keyword-params]]
    [ring.util.response :as response]))
 
 (defn handle-set [{:keys [db params]}]
   (response/response (swap! db merge params)))
 
-(defn handle-get [{:keys [db]
-                   {:keys [key]} :params}]
-  (if-let [value (get @db key)]
-    (response/response {key value})
-    (response/not-found {key :not-found})))
+(defn handle-get [{:keys [db params]}]
+  (let [key (keyword (:key params))]
+    (if-let [value (get @db key)]
+      (response/response {key value})
+      (response/not-found {key :not-found}))))
 
 (def routes
   [["/set" {:get {:parameters
@@ -40,11 +40,13 @@
      :exception pretty/exception
      :data {:coercion malli/coercion
             :muuntaja muuntaja.core/instance
-            :middleware [(fn [handler]
+            :middleware [parameters/parameters-middleware
+                         (fn [handler]
                            (fn [request]
                              (handler (assoc request :db (:db opts)))))
-                         parameters/parameters-middleware
-                         wrap-keyword-params
+                         (fn [handler]
+                           (fn [request]
+                             (handler (update request :params walk/keywordize-keys))))
                          muuntaja/format-negotiate-middleware
                          muuntaja/format-response-middleware
                          muuntaja/format-request-middleware
