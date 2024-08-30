@@ -3,7 +3,7 @@
    [recurse.test-helper :as th]
    [clojure.test :refer [deftest is use-fixtures testing]]))
 
-(use-fixtures :once th/bootstrap)
+(use-fixtures :each th/bootstrap)
 
 (deftest handle-get-set
   (testing "key required"
