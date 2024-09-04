@@ -11,3 +11,4 @@ public/css
 .clj-kondo
 .lsp
 docker
+/db-*.edn

@@ -6,17 +6,19 @@
    [clojure.walk :as walk]
    [cheshire.core :as json]))
 
-(defonce system nil)
+(def ^:dynamic *system* nil)
 
-(def test-config (dissoc main/config :recurse.main/server))
+(def ^:dynamic *test-config*
+  (dissoc main/config :recurse.main/server))
 
 (defn bootstrap [test]
-  (alter-var-root #'system (constantly test-config))
-  (alter-var-root #'system ig/init)
-  (test))
+  (binding [*test-config* (assoc-in *test-config* [:recurse.db/db :filepath]
+                            (format "db-%s.edn" (random-uuid)))]
+    (binding [*system* (ig/init *test-config*)]
+      (test))))
 
 (defn run-request [request]
-  (let [handler  (:recurse.handler/handler system)
+  (let [handler  (:recurse.handler/handler *system*)
         response (handler request)]
     (update response :body (comp walk/keywordize-keys json/decode slurp))))
 

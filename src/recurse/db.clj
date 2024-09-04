@@ -6,7 +6,7 @@
 
 (defmethod ig/init-key ::db [_ {:keys [filepath] :as opts}]
   {:filepath filepath
-   :data (atom (edn/read-string (slurp (io/file filepath))))})
+   :data (atom (try (edn/read-string (slurp (io/file filepath))) (catch Exception _ {})))})
 
 (defmethod ig/halt-key! ::db [_ _]
   {})
