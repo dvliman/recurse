@@ -13,8 +13,7 @@
    [ring.util.response :as response]))
 
 (defn handle-set [{:keys [db params]}]
-  (let [data (:data db)]
-    (response/response @(:data (db/write db (swap! data merge params))))))
+  (response/response @(:data (db/write db params))))
 
 (defn handle-get [{:keys [db params]}]
   (let [key (keyword (:key params))]
@@ -26,13 +25,13 @@
   [["/set" {:get {:parameters
                   {:query [:fn {:error/message "params required"}
                            (fn [params] (and (map? params) (seq params)))]}
-                  :handler handle-set}}]
+                  :handler #'handle-set}}]
    ["/get" {:get {:parameters
                   {:query [:and
                            [:map [:key string?]]
                            [:fn {:error/message "key required"}
                             (fn [{:keys [key]}] (seq key))]]}
-                  :handler handle-get}}]])
+                  :handler #'handle-get}}]])
 
 (defmethod ig/init-key ::handler [_ opts]
   (ring/ring-handler
