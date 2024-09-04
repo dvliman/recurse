@@ -1,5 +1,6 @@
 (ns recurse.handler
   (:require
+   [recurse.db :as db]
    [clojure.walk :as walk]
    [integrant.core :as ig]
    [muuntaja.core]
@@ -12,11 +13,12 @@
    [ring.util.response :as response]))
 
 (defn handle-set [{:keys [db params]}]
-  (response/response (swap! db merge params)))
+  (let [data (:data db)]
+    (response/response @(:data (db/write db (swap! data merge params))))))
 
 (defn handle-get [{:keys [db params]}]
   (let [key (keyword (:key params))]
-    (if-let [value (get @db key)]
+    (if-let [value (get @(:data db) key)]
       (response/response {key value})
       (response/not-found {key :not-found}))))
 

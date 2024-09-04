@@ -13,7 +13,7 @@
   (.stop server))
 
 (def config
-  {:recurse.db/db {}
+  {:recurse.db/db {:filepath "db.edn"}
    :recurse.handler/handler {:db (ig/ref :recurse.db/db)}
    :recurse.main/server {:handler (ig/ref :recurse.handler/handler)
                          :port 4000
